@@ -4,6 +4,10 @@ import { server as WebSocketServer } from "websocket";
 import cors, { CorsOptions } from "cors";
 import http from "http";
 import bodyParser from "body-parser";
+import dotenv from "dotenv";
+dotenv.config();
+
+console.log(process.env.VAR)
 
 const fOrigin: any = "http://localhost:3000/";
 
@@ -42,7 +46,11 @@ wss.on("request", function (request:any) {
 
   var connection = request.accept("echo-protocol", request.origin);
   console.log(new Date() + " Connection accepted.");
+  
   connection.send("hello")
+
+
+
   connection.on("message", function (message:any) {
     if (message.type === "utf8") {
       console.log("Received Message: " + message.utf8Data);
