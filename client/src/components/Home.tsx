@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { userType } from "../userContext";
 import { UserContext } from "../userContext";
+import { setTimeout } from "timers";
 let ws: any;
 
 const Home: React.FC = () => {
@@ -10,7 +11,15 @@ const Home: React.FC = () => {
   const user = context?.user;
   const setUser = context?.setUser;
 
-  const [room, setRoom] = useState<string>();
+  const [room, setRoom] = useState<string>("");
+  const [rooms, setRooms] = useState<[]>([]);
+
+  const jsonify = (data:any) =>{
+    return JSON.parse(data)
+  }
+  const sendJson = (data:any) =>{
+    return JSON.stringify(data)
+  }
 
   useEffect(() => {
     ws = new WebSocket(ENDPT, "echo-protocol");
@@ -31,7 +40,13 @@ const Home: React.FC = () => {
   useEffect(() => {
     ws.onmessage = function (event: any) {
       console.log(event.data);
+      const receiving = jsonify(event.data);
+      console.log(receiving)
+      if (receiving.type === "room-created"){
+        setRooms(...rooms, receiving.payload)
+      }
     };
+    
   }, []);
 
   const setRam = () => {
@@ -61,7 +76,12 @@ const Home: React.FC = () => {
   const formhandler = (e: React.FormEvent<HTMLFormElement>) =>{
     e.preventDefault();
     alert(`${room} created`);
-    ws.send(room);
+    ws.send(JSON.stringify({
+      type: "create-room",
+      payload: {
+        room: room
+      }
+    }));
     setRoom("");
   }
 

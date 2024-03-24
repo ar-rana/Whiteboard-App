@@ -6,6 +6,7 @@ import http from "http";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import Room from "./models/Room";
+import { log } from "console";
 dotenv.config();
 
 const fOrigin: any = "http://localhost:3000/";
@@ -23,20 +24,30 @@ app.use(bodyParser.json());
 
 const server: any = http.createServer(app);
 
-const DBURL:any = process.env.DBURL
-mongoose.connect(DBURL).then(()=>console.log("DB connected")).catch((err)=>console.log(err))
+const DBURL: any = process.env.DBURL;
+mongoose
+  .connect(DBURL)
+  .then(() => console.log("DB connected"))
+  .catch((err) => console.log(err));
 
 const wss: any = new WebSocketServer({
   httpServer: server,
   autoAcceptConnections: false,
 });
 
-function originIsAllowed(origin:string) {
+function originIsAllowed(origin: string) {
   return true;
 }
 
-wss.on("request", function (request:any) {
-  console.log("inside connect")
+const jsonify = (data: any) => {
+  return JSON.parse(data);
+};
+const sendJson = (data: any) => {
+  return JSON.stringify(data);
+};
+
+wss.on("request", function (request: any) {
+  console.log("inside connect");
   if (!originIsAllowed(request.origin)) {
     // Make sure we only accept requests from an allowed origin
     request.reject();
@@ -48,26 +59,42 @@ wss.on("request", function (request:any) {
 
   var connection = request.accept("echo-protocol", request.origin);
   console.log(new Date() + " Connection accepted.");
-  
-  connection.send("hello")
 
-  connection.on("message", function(message:string){
-    console.log(message)
-  })
+  connection.on("message", function (message: any) {
+    if (message.type === "utf8") {
+      console.log("Received Message: " + message.utf8Data);
+      const receiving = jsonify(message.utf8Data);
+      console.log("json: ", receiving);
+      if (receiving.type === "get-rooms") {
+        Room.find().then((result) => {
+          connection.send(sendJson({ type: "output-rooms", rooms: result }));
+          console.log(result);
+        });
+      }
+      if (receiving.type === "create-room") {
+        console.log(receiving.payload.room);
+        const newRoom = new Room({ name: receiving.payload.room });
+        newRoom.save().then((result) =>
+          connection.send(
+            sendJson({
+              type: "room-created",
+              payload: {
+                room: result,
+              },
+            })
+          )
+        );
+      }
 
-
-  // connection.on("message", function (message:any) {
-  //   if (message.type === "utf8") {
-  //     console.log("Received Message: " + message.utf8Data);
-  //     connection.sendUTF(message.utf8Data);
-  //   } else if (message.type === "binary") {
-  //     console.log(
-  //       "Received Binary Message of " + message.binaryData.length + " bytes"
-  //     );
-  //     connection.sendBytes(message.binaryData);
-  //   }
-  // });
-  connection.on("close", function (reasonCode:any, description:any) {
+      //connection.sendUTF(message.utf8Data);
+    } else if (message.type === "binary") {
+      console.log(
+        "Received Binary Message of " + message.binaryData.length + " bytes"
+      );
+      connection.sendBytes(message.binaryData);
+    }
+  });
+  connection.on("close", function (reasonCode: any, description: any) {
     console.log(
       new Date() + " Peer " + connection.remoteAddress + " disconnected."
     );
