@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { userType } from "../userContext";
 import { UserContext } from "../userContext";
 let ws: any;
@@ -10,6 +10,8 @@ const Home: React.FC = () => {
   const user = context?.user;
   const setUser = context?.setUser;
 
+  const [room, setRoom] = useState<string>();
+
   useEffect(() => {
     ws = new WebSocket(ENDPT, "echo-protocol");
     ws.onerror = function (event: any) {
@@ -18,15 +20,19 @@ const Home: React.FC = () => {
     ws.onopen = function () {
       console.log("connected to ws server");
     };
-    ws.onmessage = function (event: any) {
-      console.log(event.data);
-    };
+
     return () => {
       ws.onclose = function () {
         console.log("ws connection closed");
       };
     };
   }, [ENDPT]);
+
+  useEffect(() => {
+    ws.onmessage = function (event: any) {
+      console.log(event.data);
+    };
+  }, []);
 
   const setRam = () => {
     const ram: userType = {
@@ -52,10 +58,17 @@ const Home: React.FC = () => {
     }
   };
 
-  const btnHandler = (e: any) => {
+  const formhandler = (e: React.FormEvent<HTMLFormElement>) =>{
     e.preventDefault();
-    alert("room created");
-  };
+    alert(`${room} created`);
+    ws.send(room);
+    setRoom("");
+  }
+
+  // const btnHandler = (e: any) => {
+  //   e.preventDefault();
+  //   alert("room created");
+  // };
   return (
     <div>
       <div className="flex-row flex-wrap">
@@ -66,12 +79,15 @@ const Home: React.FC = () => {
           >
             <div className="card-header">Create Room</div>
             <div className="card-body text-primary position-relative p-5">
-              <button
-                className="font-weight-bold shadow bg-body rounded btn-lg rounded-circle border border-primary bg-grey position-absolute top-50 start-50 translate-middle"
-                onClick={btnHandler}
-              >
-                +
-              </button>
+              <form onSubmit={formhandler}>
+                <input
+                  value={room}
+                  type="text"
+                  placeholder="Enter Room Name"
+                  onChange={(e) => setRoom(e.target.value)}
+                />
+                <button type="submit" className="btn btn-info mt-3 ">Create Room</button>
+              </form>
             </div>
           </div>
         </div>

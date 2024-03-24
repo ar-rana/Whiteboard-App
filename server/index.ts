@@ -5,9 +5,8 @@ import cors, { CorsOptions } from "cors";
 import http from "http";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
+import Room from "./models/Room";
 dotenv.config();
-
-console.log(process.env.VAR)
 
 const fOrigin: any = "http://localhost:3000/";
 
@@ -23,6 +22,9 @@ app.use(cors(options));
 app.use(bodyParser.json());
 
 const server: any = http.createServer(app);
+
+const DBURL:any = process.env.DBURL
+mongoose.connect(DBURL).then(()=>console.log("DB connected")).catch((err)=>console.log(err))
 
 const wss: any = new WebSocketServer({
   httpServer: server,
@@ -49,19 +51,22 @@ wss.on("request", function (request:any) {
   
   connection.send("hello")
 
+  connection.on("message", function(message:string){
+    console.log(message)
+  })
 
 
-  connection.on("message", function (message:any) {
-    if (message.type === "utf8") {
-      console.log("Received Message: " + message.utf8Data);
-      connection.sendUTF(message.utf8Data);
-    } else if (message.type === "binary") {
-      console.log(
-        "Received Binary Message of " + message.binaryData.length + " bytes"
-      );
-      connection.sendBytes(message.binaryData);
-    }
-  });
+  // connection.on("message", function (message:any) {
+  //   if (message.type === "utf8") {
+  //     console.log("Received Message: " + message.utf8Data);
+  //     connection.sendUTF(message.utf8Data);
+  //   } else if (message.type === "binary") {
+  //     console.log(
+  //       "Received Binary Message of " + message.binaryData.length + " bytes"
+  //     );
+  //     connection.sendBytes(message.binaryData);
+  //   }
+  // });
   connection.on("close", function (reasonCode:any, description:any) {
     console.log(
       new Date() + " Peer " + connection.remoteAddress + " disconnected."
