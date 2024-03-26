@@ -67,7 +67,9 @@ wss.on("request", function (request: any) {
       console.log("json: ", receiving);
       if (receiving.type === "get-rooms") {
         Room.find().then((result) => {
-          connection.send(sendJson({ type: "output-rooms", rooms: result }));
+          connection.send(
+            sendJson({ type: "output-rooms", payload: { rooms: result } })
+          );
           console.log(result);
         });
       }
