@@ -4,17 +4,19 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { UserContext } from "./userContext";
 import { userType } from "./userContext";
 import Home from "./components/Home";
+import Whiteboard from "./components/Whiteboard";
 
 function App() {
-  const [user, setUser] = useState<userType|null>(null);
+  const [user, setUser] = useState<userType | null>(null);
 
   return (
     <>
       <BrowserRouter>
         <UserContext.Provider value={{ user, setUser }}>
-        <Navbar />
+          <Navbar />
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/whiteboard/:room_id" element={<Whiteboard />} />
           </Routes>
         </UserContext.Provider>
       </BrowserRouter>
