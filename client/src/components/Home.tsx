@@ -1,21 +1,39 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
 
-const Home = () => {
-  const [name, setName] = useState("");
+const Home: React.FC = () => {
+  const [name, setName] = useState<string>("");
+  const navigate = useNavigate();
+
   const createRoomHandler = () => {
     if (!name) {
-        alert("Name field is Required!!");
-        return;
-    };
+      alert("Name field is Required!!");
+      return;
+    }
+    navigate("/whiteboard", { state: {} });
     console.log("Hello");
   };
   return (
     <div className="absolute bg-slate-800 w-full h-full flex flex-col items-center">
       <div className="relative top-[20%]">
-        <span className="text-4xl text-white font-bold">Collaborative WhiteBoard</span>
+        <div className="flex space-x-4">
+          <img className="rounded-lg h-10" src={logo} alt="logo" />
+          <span className="text-4xl text-white font-bold">
+            Collaborative WhiteBoard
+          </span>
+        </div>
         <div className="flex gap-2 justify-center items-center">
-          <a className="text-white fa fa-github-square text-3xl" href="https://www.linkedin.com/in/-aryan-rana/" target="_blank"></a>
-          <a className="text-white fa fa-linkedin-square text-3xl" href="https://github.com/ar-rana" target="_blank"></a>
+          <a
+            className="text-white fa fa-github-square text-3xl"
+            href="https://github.com/ar-rana"
+            target="_blank"
+          ></a>
+          <a
+            className="text-white fa fa-linkedin-square text-3xl"
+            href="https://www.linkedin.com/in/-aryan-rana/"
+            target="_blank"
+          ></a>
         </div>
       </div>
       <div className="p-4 rounded-lg flex flex-col w-[20%] border-2 border-gray-600 relative top-[30%] space-y-4">
