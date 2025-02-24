@@ -36,7 +36,7 @@ const Whiteboard = () => {
     };
   }, []);
 
-  const draw = (e: any) => {
+  const draw = (e: MouseEvent) => {
     const ctx: CanvasRenderingContext2D = context.current!;
     ctx.strokeStyle = colRef.current;
 
@@ -51,8 +51,8 @@ const Whiteboard = () => {
     posY.current = e.offsetY;
   };
 
-  const erase = () => {
-    console.log("Reached Eraser");
+  const erase = (e: MouseEvent) => {
+    context.current?.clearRect(e.offsetX, e.offsetY, eraserSize.current, eraserSize.current);
   };
 
   const mouseDown = (e: MouseEvent) => {
@@ -68,7 +68,7 @@ const Whiteboard = () => {
   const mouseMove = (e: MouseEvent) => {
     if (isDown.current) {
       if (drawing.current) draw(e);
-      if (eraseing.current) erase();
+      if (eraseing.current) erase(e);
     }
   };
 
@@ -121,7 +121,7 @@ const Whiteboard = () => {
             </li>
             <li
               className="px-2 py-1 w-full rounded-md hover:bg-gray-500"
-              onClick={() => (eraserSize.current = 20)}
+              onClick={() => (eraserSize.current = 25)}
             >
               <span className="fa fa-square-o text-xl"></span>
             </li>
