@@ -50,7 +50,7 @@ const Navbar: React.FC<Props> = (props) => {
             {users.map((user, i) => (
               <li
                 key={i}
-                className="px-2 py-1 w-full truncate text-center"
+                className="px-2 py-1 w-full truncate text-center rounded-md hover:bg-gray-500"
                 title={user}
               >
                 {user}
