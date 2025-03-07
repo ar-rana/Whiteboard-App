@@ -3,6 +3,22 @@ import Navbar from "../components/Navbar";
 import { useLocation, useParams } from "react-router-dom";
 import SockJS from "sockjs-client";
 import { Client } from '@stomp/stompjs';
+import WhiteboardMenu from "../components/WhiteboardMenu";
+import { start } from "repl";
+
+interface drawObj {
+  color: string;
+  start: [number, number]; // this is a tuple
+  end: [number, number];
+  boardId: string;
+}
+
+interface eraseObj {
+  xOffset: number;
+  yOffset: number;
+  eraser: number;
+  boardId: string;
+}
 
 const Whiteboard: React.FC = () => {
   const { state } = useLocation();
@@ -11,8 +27,6 @@ const Whiteboard: React.FC = () => {
 
   const [color, setColor] = useState<string>("#ffffff");
   const stompWSRef = useRef<null | Client>(null);
-
-  const [coord, setCoords] = useState<number[]>([]);
 
   const colRef = useRef<string>(color);
 
@@ -48,11 +62,17 @@ const Whiteboard: React.FC = () => {
   const draw = (e: MouseEvent) => {
     const ctx: CanvasRenderingContext2D = context.current!;
     ctx.strokeStyle = colRef.current;
-
+    const x = posX.current;
+    const y = posY.current;
     ctx.beginPath();
-    ctx.moveTo(posX.current, posY.current);
+    ctx.moveTo(x, y);
     ctx.lineTo(e.offsetX, e.offsetY);
-    // console.log(e.offsetX, " - ", e.offsetY);
+    sendDrawMsg({
+      boardId: id!,
+      start: [x, y],
+      end: [e.offsetX, e.offsetY],
+      color: colRef.current,
+    })
     ctx.stroke();
     ctx.closePath();
 
@@ -61,7 +81,17 @@ const Whiteboard: React.FC = () => {
   };
 
   const erase = (e: MouseEvent) => {
-    context.current?.clearRect(e.offsetX, e.offsetY, eraserSize.current, eraserSize.current);
+    const x = e.offsetX;
+    const y = e.offsetY;
+    const msg: eraseObj = {
+      xOffset: x,
+      yOffset: y,
+      eraser: eraserSize.current,
+      boardId: id!,
+    }
+    context.current?.clearRect(x, y, eraserSize.current, eraserSize.current);
+    console.log("erase: ", msg);
+    sendEraseMsg(msg);
   };
 
   const mouseDown = (e: MouseEvent) => {
@@ -80,6 +110,23 @@ const Whiteboard: React.FC = () => {
       if (eraseing.current) erase(e);
     }
   };
+
+  const drawReceived = (msg: drawObj) => {
+    const ctx: CanvasRenderingContext2D = context.current!;
+    ctx.strokeStyle = msg.color;
+    ctx.beginPath();
+
+    ctx.moveTo(...msg.start);
+    ctx.lineTo(...msg.end);
+
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  const eraseReceived = (msg: eraseObj) => {
+    console.log("reached WS eraser");
+    context.current?.clearRect(msg.xOffset, msg.yOffset, msg.eraser, msg.eraser);
+  }
 
   const generatePin = (): number => {
     let pin = 0;
@@ -103,9 +150,15 @@ const Whiteboard: React.FC = () => {
       },
       onConnect: () => {
         console.log("Connected to STOMP");
-        stompClient.subscribe(`/board/${id}`, (res) => {
+        stompClient.subscribe(`/board/${id}`, async (res) => {
           console.log("Received Msg: ", res.body);
-          console.log(JSON.parse(res.body).content);
+          const response = await JSON.parse(res.body).body;
+          console.log("res msg: ", response);
+          if (response.color) {
+            drawReceived(response);
+          } else {
+            eraseReceived(response);
+          }
         });
       },
       onStompError: (frame) => {
@@ -121,6 +174,31 @@ const Whiteboard: React.FC = () => {
     }
   }, [])
 
+  const sendDrawMsg = (msg: drawObj) => {
+    const stompClient = stompWSRef.current;
+    if (stompClient && stompClient.connected) {
+      stompClient.publish({
+        destination: `/app/collab/draw/${id}`,
+        body: JSON.stringify(msg),
+      })
+    } else {
+      console.log("Not Connected to WS");
+    }
+  }
+
+  const sendEraseMsg = (msg: eraseObj) => {
+    const stompClient = stompWSRef.current;
+    console.log("eraser msg: ", msg);
+    if (stompClient && stompClient.connected) {
+      stompClient.publish({
+        destination: `/app/collab/erase/${id}`,
+        body: JSON.stringify(msg),
+      })
+    } else {
+      console.log("Not Connected to WS");
+    }
+  }
+
   return (
     <div className="relative flex flex-col h-screen">
       <div className="absolute top-0 border-b-white w-full z-10">
@@ -135,57 +213,7 @@ const Whiteboard: React.FC = () => {
         ></canvas>
       </div>
       <div className="absolute flex flex-col top-14 left-0 space-y-1">
-        <button
-          className="relative bg-gray-300 hover:bg-gray-400 text-gray-800 py-4 px-2 rounded-r fa fa-eraser group"
-          title="Eraser"
-        >
-          <ul
-            className="hidden absolute left-full top-0 mt-1 bg-slate-700 text-white font-semibold shadow-lg group-hover:flex flex-col items-center w-20 rounded-md"
-            onClick={() => {
-              eraseing.current = true;
-              drawing.current = false;
-            }}
-          >
-            <li
-              className="px-2 py-1 w-full rounded-md hover:bg-gray-500 active:bg-slate-400"
-              onClick={() => (eraserSize.current = 5)}
-            >
-              <span className="fa fa-square-o text-xs"></span>
-            </li>
-            <li
-              className="px-2 py-1 w-full rounded-md hover:bg-gray-500 active:bg-slate-400"
-              onClick={() => (eraserSize.current = 10)}
-            >
-              <span className="fa fa-square-o text-sm"></span>
-            </li>
-            <li
-              className="px-2 py-1 w-full rounded-md hover:bg-gray-500 active:bg-slate-400"
-              onClick={() => (eraserSize.current = 15)}
-            >
-              <span className="fa fa-square-o text-lg"></span>
-            </li>
-            <li
-              className="px-2 py-1 w-full rounded-md hover:bg-gray-500 active:bg-slate-400"
-              onClick={() => (eraserSize.current = 28)}
-            >
-              <span className="fa fa-square-o text-xl"></span>
-            </li>
-          </ul>
-        </button>
-        <button
-          className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-4 px-2 rounded-r fa fa-pencil-square-o active:bg-gray-500"
-          title="Pencil"
-          onClick={() => {
-            eraseing.current = false;
-            drawing.current = true;
-          }}
-        ></button>
-        <button
-          className="relative bg-gray-300 hover:bg-gray-400 text-gray-800 py-4 px-2 rounded-r fa fa-ravelry group"
-          title="RESET PIN"
-        >
-          <span className="hidden absolute border-2 border-blue-500 border-l-0 left-0 top-full max-w-fit px-2.5 py-1 bg-gray-100 rounded-r-md group-hover:block active:bg-gray-500">Reset PIN</span>
-        </button>
+        <WhiteboardMenu eraseing={eraseing} drawing={drawing} eraserSize={eraserSize} />
       </div>
     </div>
   );
