@@ -10,8 +10,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        {/* <Route path="/whiteboard:id" element={<Whiteboard />} /> */}
-        <Route path="/whiteboard" element={<Whiteboard />} />
+        <Route path="/whiteboard/:id" element={<Whiteboard />} />
+        {/* <Route path="/whiteboard" element={<Whiteboard />} /> */}
         <Route path="/ask" element={<Modal />} />
       </Routes>
     </BrowserRouter>

@@ -11,7 +11,7 @@ const Home: React.FC = () => {
       alert("Name field is Required!!");
       return;
     }
-    navigate("/whiteboard", { state: { pin: generatePin() }});
+    navigate("/whiteboard/1", { state: { pin: generatePin() }});
     console.log("Hello");
   };
 

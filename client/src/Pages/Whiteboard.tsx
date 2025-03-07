@@ -1,10 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import Navbar from "../components/Navbar";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
+import SockJS from "sockjs-client";
+import { Client } from '@stomp/stompjs';
 
 const Whiteboard: React.FC = () => {
   const { state } = useLocation();
+  const { id } = useParams<string>();
+  console.log("id: ",id, "state: ",state);
+
   const [color, setColor] = useState<string>("#ffffff");
+  const stompWSRef = useRef<null | Client>(null);
+
   const [coord, setCoords] = useState<number[]>([]);
 
   const colRef = useRef<string>(color);
@@ -85,6 +92,34 @@ const Whiteboard: React.FC = () => {
   useEffect(() => {
     colRef.current = color;
   }, [color]);
+
+  useEffect(() => {
+    const socket = new SockJS("http://localhost:8000/ws");
+    const stompClient = new Client({
+      webSocketFactory: () => socket,
+      reconnectDelay: 4000,
+      debug: (str) => {
+        console.log(str);
+      },
+      onConnect: () => {
+        console.log("Connected to STOMP");
+        stompClient.subscribe(`/board/${id}`, (res) => {
+          console.log("Received Msg: ", res.body);
+          console.log(JSON.parse(res.body).content);
+        });
+      },
+      onStompError: (frame) => {
+        console.log("Error: ", frame.body)
+      }
+    })
+
+    stompClient.activate();
+    stompWSRef.current = stompClient;
+
+    return () => {
+      stompClient.deactivate();
+    }
+  }, [])
 
   return (
     <div className="relative flex flex-col h-screen">

@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { HtmlHTMLAttributes, useState } from "react";
 
-const Modal = () => {
+const Modal: React.FC = () => {
   const [pin, setPin] = useState("");
 
-  const nextInput = (e) => {
+  const nextInput = (e: any) => {
     const target = e.target;
     const val = target.value;
     let isnum = /^\d+$/.test(val);
@@ -18,7 +18,7 @@ const Modal = () => {
     }
   };
 
-  const deleteInput = (e) => {
+  const deleteInput = (e: any) => {
     if (pin === "") return;
     const target = e.target;
     const key = e.key.toLowerCase();
@@ -47,28 +47,28 @@ const Modal = () => {
         <div id="inputs" className="flex justify-center items-center mt-2">
           <input
             type="text"
-            maxLength="1"
+            maxLength={1}
             className="font-semibold border-2 border-black w-8 h-8 m-2 p-2.5 rounded"
             onChange={nextInput}
             onKeyUp={deleteInput}
           />
           <input
             type="text"
-            maxLength="1"
+            maxLength={1}
             className="font-semibold border-2 border-black w-8 h-8 m-2 p-2.5 rounded"
             onChange={nextInput}
             onKeyUp={deleteInput}
           />
           <input
             type="text"
-            maxLength="1"
+            maxLength={1}
             className="font-semibold border-2 border-black w-8 h-8 m-2 p-2.5 rounded"
             onChange={nextInput}
             onKeyUp={deleteInput}
           />
           <input
             type="text"
-            maxLength="1"
+            maxLength={1}
             className="font-semibold border-2 border-black w-8 h-8 m-2 p-2.5 rounded"
             onChange={nextInput}
             onKeyUp={deleteInput}
