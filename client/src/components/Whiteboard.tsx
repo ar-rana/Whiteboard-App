@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import Navbar from "./Navbar";
+import { useLocation } from "react-router-dom";
 
-const Whiteboard = () => {
+const Whiteboard: React.FC = () => {
+  const { state } = useLocation();
   const [color, setColor] = useState<string>("#ffffff");
   const [coord, setCoords] = useState<number[]>([]);
 
@@ -72,6 +74,14 @@ const Whiteboard = () => {
     }
   };
 
+  const generatePin = (): number => {
+    let pin = 0;
+    for (let i=0;i<4;i++) {
+      pin = pin*10 + Math.floor(Math.random() * 10);
+    }
+    return pin;
+  }
+
   useEffect(() => {
     colRef.current = color;
   }, [color]);
@@ -79,7 +89,7 @@ const Whiteboard = () => {
   return (
     <div className="relative flex flex-col h-screen">
       <div className="absolute top-0 border-b-white w-full z-10">
-        <Navbar setColor={setColor} />
+        <Navbar setColor={setColor} pin={state.pin}/>
       </div>
       <div className="h-full">
         <canvas
@@ -102,33 +112,33 @@ const Whiteboard = () => {
             }}
           >
             <li
-              className="px-2 py-1 w-full rounded-md hover:bg-gray-500"
+              className="px-2 py-1 w-full rounded-md hover:bg-gray-500 active:bg-slate-400"
               onClick={() => (eraserSize.current = 5)}
             >
               <span className="fa fa-square-o text-xs"></span>
             </li>
             <li
-              className="px-2 py-1 w-full rounded-md hover:bg-gray-500"
+              className="px-2 py-1 w-full rounded-md hover:bg-gray-500 active:bg-slate-400"
               onClick={() => (eraserSize.current = 10)}
             >
               <span className="fa fa-square-o text-sm"></span>
             </li>
             <li
-              className="px-2 py-1 w-full rounded-md hover:bg-gray-500"
+              className="px-2 py-1 w-full rounded-md hover:bg-gray-500 active:bg-slate-400"
               onClick={() => (eraserSize.current = 15)}
             >
               <span className="fa fa-square-o text-lg"></span>
             </li>
             <li
-              className="px-2 py-1 w-full rounded-md hover:bg-gray-500"
-              onClick={() => (eraserSize.current = 25)}
+              className="px-2 py-1 w-full rounded-md hover:bg-gray-500 active:bg-slate-400"
+              onClick={() => (eraserSize.current = 28)}
             >
               <span className="fa fa-square-o text-xl"></span>
             </li>
           </ul>
         </button>
         <button
-          className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-4 px-2 rounded-r fa fa-pencil-square-o"
+          className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-4 px-2 rounded-r fa fa-pencil-square-o active:bg-gray-500"
           title="Pencil"
           onClick={() => {
             eraseing.current = false;
@@ -136,9 +146,11 @@ const Whiteboard = () => {
           }}
         ></button>
         <button
-          className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-4 px-2 rounded-r fa fa-ravelry"
+          className="relative bg-gray-300 hover:bg-gray-400 text-gray-800 py-4 px-2 rounded-r fa fa-ravelry group"
           title="RESET PIN"
-        ></button>
+        >
+          <span className="hidden absolute border-2 border-blue-500 border-l-0 left-0 top-full max-w-fit px-2.5 py-1 bg-gray-100 rounded-r-md group-hover:block active:bg-gray-500">Reset PIN</span>
+        </button>
       </div>
     </div>
   );

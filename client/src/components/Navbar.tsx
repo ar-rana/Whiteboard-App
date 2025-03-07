@@ -3,6 +3,7 @@ import logo from "../assets/logo.png";
 
 interface Props {
   setColor: (color: string) => void;
+  pin: number | null;
   // users: string;
 }
 
@@ -22,7 +23,7 @@ const Navbar: React.FC<Props> = (props) => {
             className="text-white font-bold self-center"
             htmlFor="favcolor"
           >
-            Color:{"  "}
+            Color:
           </label>
           <input
             className="rounded-md p-0"
@@ -33,12 +34,16 @@ const Navbar: React.FC<Props> = (props) => {
             defaultValue="#ffffff"
           />
         </form>
-        <p
-          className="text-white font-bold self-center"
-          title="Share this PIN for people to access you space"
-        >
-          PIN: 0000{" "}
-        </p>
+        {props.pin ? (
+          <p
+            className="text-white font-bold self-center"
+            title="Share this PIN for people to access you space"
+          >
+            PIN: {props.pin}
+          </p>
+        ) : (
+          ""
+        )}
         <div className="relative flex flex-col items-center group justify-center">
           <label
             className="text-white font-bold cursor-pointer text-center w-full hover:underline"
@@ -46,14 +51,18 @@ const Navbar: React.FC<Props> = (props) => {
           >
             Collaborators
           </label>
-          <ul className="absolute top-[80%] mt-1 bg-slate-700 text-white font-semibold shadow-lg hidden group-hover:flex flex-col items-center w-40 rounded-md">
+          <ul className="absolute top-[80%] mt-1 bg-slate-700 text-white font-semibold shadow-lg hidden group-hover:flex flex-col items-center w-36 rounded-md">
             {users.map((user, i) => (
               <li
                 key={i}
-                className="px-2 py-1 w-full truncate text-center rounded-md hover:bg-gray-500"
+                className="flex justify-around items-center px-2 py-1 w-full text-center rounded-md hover:bg-gray-500"
                 title={user}
               >
-                {user}
+                <span className="truncate">{user}</span>
+                <span
+                  className="fa fa-ban text-md text-red-500 bg-white p-0.5 rounded"
+                  title="Remove"
+                ></span>
               </li> // title={user} to show full name when we hover on li
             ))}
           </ul>

@@ -6,14 +6,23 @@ const Home: React.FC = () => {
   const [name, setName] = useState<string>("");
   const navigate = useNavigate();
 
-  const createRoomHandler = () => {
+  const createRoomHandler = (): void => {
     if (!name) {
       alert("Name field is Required!!");
       return;
     }
-    navigate("/whiteboard", { state: {} });
+    navigate("/whiteboard", { state: { pin: generatePin() }});
     console.log("Hello");
   };
+
+  const generatePin = (): number => {
+    let pin = 0;
+    for (let i=0;i<4;i++) {
+      pin = pin*10 + Math.floor(Math.random() * 10);
+    }
+    return pin;
+  }
+
   return (
     <div className="absolute bg-slate-800 w-full h-full flex flex-col items-center">
       <div className="relative top-[20%]">
