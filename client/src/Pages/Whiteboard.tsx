@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import Navbar from "./Navbar";
+import Navbar from "../components/Navbar";
 import { useLocation } from "react-router-dom";
 
 const Whiteboard: React.FC = () => {
