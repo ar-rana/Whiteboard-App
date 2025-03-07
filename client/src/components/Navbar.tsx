@@ -4,6 +4,7 @@ import logo from "../assets/logo.png";
 interface Props {
   setColor: (color: string) => void;
   pin: number | null;
+  id: string | undefined;
   // users: string;
 }
 
@@ -44,6 +45,17 @@ const Navbar: React.FC<Props> = (props) => {
         ) : (
           ""
         )}
+        <div className="relative flex flex-col items-center group justify-center">
+          <label
+            className="text-white font-bold cursor-pointer text-center w-full hover:underline"
+            htmlFor="favcolor"
+          >
+            Room-ID
+          </label>
+          <ul className="absolute top-[80%] mt-1.5 bg-white text-black font-semibold shadow-lg hidden group-hover:flex flex-col items-center w-80 rounded-md p-1">
+            {props.id}
+          </ul>
+        </div>
         <div className="relative flex flex-col items-center group justify-center">
           <label
             className="text-white font-bold cursor-pointer text-center w-full hover:underline"

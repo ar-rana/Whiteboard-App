@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.practice.wsServer.Service.RedisCacheService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/room")
+@Slf4j
 public class RoomController {
 
     @Autowired
@@ -40,6 +42,8 @@ public class RoomController {
         cache.setCache(adminKey, user, 24);
         cache.setCache(roomKey, PIN, 24);
 
+        log.info("Room Created: {}", uuid);
+
         return uuid;
     }
 
@@ -56,6 +60,10 @@ public class RoomController {
         String admin = cache.getCache(adminKey, String.class);
         String roomPIN = cache.getCache(roomKey, String.class);
 
+        if (!roomPIN.equals(PIN)) {
+            return new ResponseEntity<>("", HttpStatus.UNAUTHORIZED);
+        }
+
         List<String> users = cache.getCache(key, new TypeReference<List<String>>() {});
         if (!users.contains(user)) {
             users.add(user);
@@ -63,11 +71,8 @@ public class RoomController {
         } else {
             return new ResponseEntity<>("User Already inside the Room", HttpStatus.UNAUTHORIZED);
         }
-        if (roomPIN.equals(PIN)) {
-            return ResponseEntity.ok().body(admin);
-        }
 
-        return new ResponseEntity<>("", HttpStatus.UNAUTHORIZED);
+        return ResponseEntity.ok().body(admin);
     }
 
     @GetMapping("/verify/{user}/{boardId}")

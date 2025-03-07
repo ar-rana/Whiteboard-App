@@ -1,15 +1,22 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 
 const Home: React.FC = () => {
   const [name, setName] = useState<string>("");
-  const [pin, setPin] = useState<number | null>(null);
+  const pinRef = useRef<number | null>(null);
+  const [roomId, setRoomId] = useState<string>("");
+  const [join, setJoin] = useState<boolean>(false);
+
   const navigate = useNavigate();
 
-  const createRoomHandler = (): void => {
+  const roomHandler = (): void => {
     if (!name) {
       alert("Name field is Required!!");
+      return;
+    }
+    if (join) {
+      navigate(`/whiteboard/${roomId}`, { state: { pin: null, user: name }});
       return;
     }
     getRoomId();
@@ -18,7 +25,7 @@ const Home: React.FC = () => {
 
   const getRoomId = async () => {
     const pin = generatePin();
-    setPin(pin);
+    pinRef.current = pin;
     try {
       const res = await fetch("http://localhost:8000/room/create", {
         method: "POST",
@@ -27,26 +34,26 @@ const Home: React.FC = () => {
         },
         body: JSON.stringify({
           user: name,
-          pin: pin,
-        })
-      })
+          pin: pinRef.current,
+        }),
+      });
 
       if (res.ok) {
         const resp = await res.text();
-        navigate(`/whiteboard/${resp}`, { state: { pin: pin }});
+        navigate(`/whiteboard/${resp}`, { state: { pin: pinRef.current, user: name }});
       }
     } catch (e) {
       console.log(e);
     }
-  }
+  };
 
   const generatePin = (): number => {
     let pin = 0;
-    for (let i=0;i<4;i++) {
-      pin = pin*10 + Math.floor(Math.random() * 10);
+    for (let i = 0; i < 4; i++) {
+      pin = pin * 10 + Math.floor(Math.random() * 10);
     }
     return pin;
-  }
+  };
 
   return (
     <div className="absolute bg-slate-800 w-full h-full flex flex-col items-center">
@@ -56,6 +63,13 @@ const Home: React.FC = () => {
           <span className="text-4xl text-white font-bold">
             Collaborative WhiteBoard
           </span>
+          <button
+            onClick={() => setJoin((prev) => !prev)}
+            title="Join Existing Room"
+            className="absolute left-full text-white p-2 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-full text-sm px-4 py-2 text-center me-2 mb-2"
+          >
+            Join
+          </button>
         </div>
         <div className="flex gap-2 justify-center items-center">
           <a
@@ -78,11 +92,22 @@ const Home: React.FC = () => {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
+        {join ? (
+          <input
+            type="text"
+            placeholder="Enter room Id"
+            className="text-lg p-1 text-white font-bold border-2 border-white rounded bg-inherit"
+            value={roomId}
+            onChange={(e) => setRoomId(e.target.value)}
+          />
+        ) : (
+          ""
+        )}
         <button
-          onClick={createRoomHandler}
+          onClick={roomHandler}
           className="w-full text-white p-1 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 "
         >
-          Create Room
+          {join ? "Join Room" : "Create Room"}
         </button>
       </div>
     </div>

@@ -4,7 +4,6 @@ import { useLocation, useParams } from "react-router-dom";
 import SockJS from "sockjs-client";
 import { Client } from '@stomp/stompjs';
 import WhiteboardMenu from "../components/WhiteboardMenu";
-import { start } from "repl";
 
 interface drawObj {
   color: string;
@@ -202,7 +201,7 @@ const Whiteboard: React.FC = () => {
   return (
     <div className="relative flex flex-col h-screen">
       <div className="absolute top-0 border-b-white w-full z-10">
-        <Navbar setColor={setColor} pin={state?.pin}/>
+        <Navbar setColor={setColor} pin={state?.pin} id={id}/>
       </div>
       <div className="h-full">
         <canvas
