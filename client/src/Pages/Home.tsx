@@ -4,6 +4,7 @@ import logo from "../assets/logo.png";
 
 const Home: React.FC = () => {
   const [name, setName] = useState<string>("");
+  const [pin, setPin] = useState<number | null>(null);
   const navigate = useNavigate();
 
   const createRoomHandler = (): void => {
@@ -11,9 +12,33 @@ const Home: React.FC = () => {
       alert("Name field is Required!!");
       return;
     }
-    navigate("/whiteboard/1", { state: { pin: generatePin() }});
+    getRoomId();
     console.log("Hello");
   };
+
+  const getRoomId = async () => {
+    const pin = generatePin();
+    setPin(pin);
+    try {
+      const res = await fetch("http://localhost:8000/room/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user: name,
+          pin: pin,
+        })
+      })
+
+      if (res.ok) {
+        const resp = await res.text();
+        navigate(`/whiteboard/${resp}`, { state: { pin: pin }});
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
 
   const generatePin = (): number => {
     let pin = 0;

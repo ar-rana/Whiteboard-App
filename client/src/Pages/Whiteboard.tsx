@@ -202,7 +202,7 @@ const Whiteboard: React.FC = () => {
   return (
     <div className="relative flex flex-col h-screen">
       <div className="absolute top-0 border-b-white w-full z-10">
-        <Navbar setColor={setColor} pin={state.pin}/>
+        <Navbar setColor={setColor} pin={state?.pin}/>
       </div>
       <div className="h-full">
         <canvas
