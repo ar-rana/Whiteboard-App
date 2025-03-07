@@ -101,4 +101,18 @@ public class RoomController {
 
         return ResponseEntity.ok().body(users);
     }
+
+    @GetMapping("/reset/{user}/{boardId}/{pin}")
+    public ResponseEntity<String> resetPin(@PathVariable(required = true) String user, @PathVariable(required = true) String boardId, @PathVariable(required = true) String pin) {
+        String roomKey = String.format("PIN/%s", boardId);
+        String adminKey = String.format("admin/%s", boardId);
+        String admin = cache.getCache(adminKey, String.class);
+
+        if (!admin.equals(user)) {
+            return new ResponseEntity<>("Unauthorized User, Ask the admin for help", HttpStatus.UNAUTHORIZED);
+        }
+        cache.setCache(roomKey, pin, 24);
+
+        return ResponseEntity.ok().body("Pin Successfully reset!");
+    }
 }

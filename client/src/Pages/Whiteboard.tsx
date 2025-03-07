@@ -24,8 +24,9 @@ const Whiteboard: React.FC = () => {
   const { id } = useParams<string>();
 
   const [users, setUsers] = useState<string[]>([state.user]);
-
+  const [pin, setPin] = useState<number | null>(state?.pin);
   const [color, setColor] = useState<string>("#ffffff");
+
   const stompWSRef = useRef<null | Client>(null);
 
   const colRef = useRef<string>(color);
@@ -128,14 +129,6 @@ const Whiteboard: React.FC = () => {
     context.current?.clearRect(msg.xOffset, msg.yOffset, msg.eraser, msg.eraser);
   }
 
-  const generatePin = (): number => {
-    let pin = 0;
-    for (let i=0;i<4;i++) {
-      pin = pin*10 + Math.floor(Math.random() * 10);
-    }
-    return pin;
-  }
-
   useEffect(() => {
     colRef.current = color;
   }, [color]);
@@ -230,7 +223,7 @@ const Whiteboard: React.FC = () => {
   return (
     <div className="relative flex flex-col h-screen">
       <div className="absolute top-0 border-b-white w-full z-10">
-        <Navbar setColor={setColor} pin={state?.pin} id={id} users={users}/>
+        <Navbar setColor={setColor} pin={pin} id={id} users={users}/>
       </div>
       <div className="h-full">
         <canvas
@@ -241,7 +234,7 @@ const Whiteboard: React.FC = () => {
         ></canvas>
       </div>
       <div className="absolute flex flex-col top-14 left-0 space-y-1">
-        <WhiteboardMenu eraseing={eraseing} drawing={drawing} eraserSize={eraserSize} />
+        <WhiteboardMenu eraseing={eraseing} drawing={drawing} eraserSize={eraserSize} admin={state?.pin != null} setPin={setPin} user={state.user}/>
       </div>
     </div>
   );

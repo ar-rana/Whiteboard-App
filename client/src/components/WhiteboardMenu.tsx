@@ -1,12 +1,46 @@
 import React from "react";
+import { useParams } from "react-router-dom";
 
 interface Props {
-    eraseing: React.RefObject<boolean>;
-    drawing: React.RefObject<boolean>;
-    eraserSize: React.RefObject<number>;
+  eraseing: React.RefObject<boolean>;
+  drawing: React.RefObject<boolean>;
+  eraserSize: React.RefObject<number>;
+  admin: boolean;
+  setPin: (pin: number) => void;
+  user: string;
 }
 
 const WhiteboardMenu: React.FC<Props> = (props) => {
+  const { id } = useParams();
+  
+  const generatePin = (): number => {
+    let pin = 0;
+    for (let i = 0; i < 4; i++) {
+      pin = pin * 10 + Math.floor(Math.random() * 10);
+    }
+    return pin;
+  };
+
+  const resetPin = async () => {
+    const pin = generatePin();
+    props.setPin(pin);
+    try {
+      const res = await fetch(`http://localhost:8000/room/reset/${props.user}/${id}/${pin}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.ok) {
+        const response = await res.text();
+        alert(response);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   return (
     <>
       <button
@@ -54,14 +88,19 @@ const WhiteboardMenu: React.FC<Props> = (props) => {
           props.drawing.current = true;
         }}
       ></button>
-      <button
-        className="relative bg-gray-300 hover:bg-gray-400 text-gray-800 py-4 px-2 rounded-r fa fa-ravelry group"
-        title="RESET PIN"
-      >
-        <span className="hidden absolute border-2 border-blue-500 border-l-0 left-0 top-full max-w-fit px-2.5 py-1 bg-gray-100 rounded-r-md group-hover:block active:bg-gray-500">
-          Reset PIN
-        </span>
-      </button>
+      {props.admin ? (
+        <button
+          className="relative bg-gray-300 hover:bg-gray-400 text-gray-800 py-4 px-2 rounded-r fa fa-ravelry group"
+          title="RESET PIN"
+          onClick={resetPin}
+        >
+          <span className="hidden absolute border-2 border-blue-500 border-l-0 left-0 top-full max-w-fit px-2.5 py-1 bg-gray-100 rounded-r-md group-hover:block active:bg-gray-500">
+            Reset PIN
+          </span>
+        </button>
+      ) : (
+        ""
+      )}
     </>
   );
 };
