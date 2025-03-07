@@ -22,7 +22,8 @@ interface eraseObj {
 const Whiteboard: React.FC = () => {
   const { state } = useLocation();
   const { id } = useParams<string>();
-  console.log("id: ",id, "state: ",state);
+
+  const [users, setUsers] = useState<string[]>([state.user]);
 
   const [color, setColor] = useState<string>("#ffffff");
   const stompWSRef = useRef<null | Client>(null);
@@ -198,10 +199,38 @@ const Whiteboard: React.FC = () => {
     }
   }
 
+  useEffect(() => {
+    const polling = setInterval(() => {
+      getCollaborators();
+    }, 6500)
+
+    return () => {
+      clearInterval(polling);
+    }
+  }, []);
+
+  const getCollaborators = async () => {
+    try {
+      const res = await fetch(`http://localhost:8000/room/getCollabs/${id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+
+      if (res.ok) {
+        const users = await res.json();
+        setUsers(users);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   return (
     <div className="relative flex flex-col h-screen">
       <div className="absolute top-0 border-b-white w-full z-10">
-        <Navbar setColor={setColor} pin={state?.pin} id={id}/>
+        <Navbar setColor={setColor} pin={state?.pin} id={id} users={users}/>
       </div>
       <div className="h-full">
         <canvas

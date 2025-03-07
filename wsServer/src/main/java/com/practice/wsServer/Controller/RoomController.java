@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +27,11 @@ public class RoomController {
 
     @Autowired
     RedisCacheService cache;
+
+//    private final SimpMessagingTemplate messagingTemplate;
+//    public RoomController(SimpMessagingTemplate messagingTemplate) {
+//        this.messagingTemplate = messagingTemplate;
+//    }
 
     @PostMapping("/create")
     public String createRoom(@RequestBody Map<String, String> item) {
@@ -68,6 +74,7 @@ public class RoomController {
         if (!users.contains(user)) {
             users.add(user);
             cache.setCache(key, users, 24);
+//            messagingTemplate.convertAndSend("/board/" + boardId, users); // publish to all WS servers "/board/{boardId}"
         } else {
             return new ResponseEntity<>("User Already inside the Room", HttpStatus.UNAUTHORIZED);
         }
@@ -85,5 +92,13 @@ public class RoomController {
         }
 
         return ResponseEntity.status(401).build();
+    }
+
+    @GetMapping("/getCollabs/{boardId}")
+    public ResponseEntity<?> getCollaborators(@PathVariable(required = true) String boardId) {
+        String key = String.format("room/%s", boardId);
+        List<String> users = cache.getCache(key, new TypeReference<List<String>>() {});
+
+        return ResponseEntity.ok().body(users);
     }
 }

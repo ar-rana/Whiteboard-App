@@ -5,11 +5,10 @@ interface Props {
   setColor: (color: string) => void;
   pin: number | null;
   id: string | undefined;
-  // users: string;
+  users: string[];
 }
 
 const Navbar: React.FC<Props> = (props) => {
-  const users = ["User1", "User2", "User3", "Big Named User for truncation"];
   return (
     <nav className="w-full h-12 bg-gray-800 flex justify-around border-b-2">
       <div className="flex space-x-1 self-center">
@@ -64,7 +63,7 @@ const Navbar: React.FC<Props> = (props) => {
             Collaborators
           </label>
           <ul className="absolute top-[80%] mt-1 bg-slate-700 text-white font-semibold shadow-lg hidden group-hover:flex flex-col items-center w-36 rounded-md">
-            {users.map((user, i) => (
+            {props.users.map((user, i) => (
               <li
                 key={i}
                 className="flex justify-around items-center px-2 py-1 w-full text-center rounded-md hover:bg-gray-500"
