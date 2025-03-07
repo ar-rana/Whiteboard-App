@@ -28,10 +28,10 @@ public class RoomController {
     @Autowired
     RedisCacheService cache;
 
-//    private final SimpMessagingTemplate messagingTemplate;
-//    public RoomController(SimpMessagingTemplate messagingTemplate) {
-//        this.messagingTemplate = messagingTemplate;
-//    }
+    private final SimpMessagingTemplate messagingTemplate;
+    public RoomController(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
 
     @PostMapping("/create")
     public String createRoom(@RequestBody Map<String, String> item) {
@@ -53,7 +53,7 @@ public class RoomController {
         return uuid;
     }
 
-    @PostMapping("/authenticate")
+    @PostMapping("/authenticate") // security
     public ResponseEntity<?> verify(@RequestBody Map<String, String> item) {
         String user = item.get("user");
         String PIN = item.get("pin");
@@ -82,7 +82,7 @@ public class RoomController {
         return ResponseEntity.ok().body(admin);
     }
 
-    @GetMapping("/verify/{user}/{boardId}")
+    @GetMapping("/verify/{user}/{boardId}") // security
     public ResponseEntity<?> verify(@PathVariable(required = true) String user, @PathVariable(required = true) String boardId) {
         String key = String.format("room/%s", boardId);
 
@@ -114,5 +114,23 @@ public class RoomController {
         cache.setCache(roomKey, pin, 24);
 
         return ResponseEntity.ok().body("Pin Successfully reset!");
+    }
+
+    @GetMapping("/remove/{admin}/{boardId}/{user}")
+    public ResponseEntity<String> removeUser(@PathVariable(required = true) String admin, @PathVariable(required = true) String boardId, @PathVariable(required = true) String user) {
+        String key = String.format("room/%s", boardId);
+        String adminKey = String.format("admin/%s", boardId);
+        String supremeUser = cache.getCache(adminKey, String.class);
+
+        if (!admin.equals(supremeUser)) {
+            return new ResponseEntity<>("Unauthorized User, Ask the admin for help", HttpStatus.UNAUTHORIZED);
+        }
+        List<String> users = cache.getCache(key, new TypeReference<List<String>>() {});
+        users.remove(user);
+        cache.setCache(key, users, 24);
+
+        messagingTemplate.convertAndSend("/board/" + boardId, Map.of("removed" ,user));
+
+        return ResponseEntity.ok().body("Successfully Removed");
     }
 }

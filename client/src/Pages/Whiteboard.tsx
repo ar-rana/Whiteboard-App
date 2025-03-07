@@ -145,12 +145,14 @@ const Whiteboard: React.FC = () => {
         console.log("Connected to STOMP");
         stompClient.subscribe(`/board/${id}`, async (res) => {
           console.log("Received Msg: ", res.body);
-          const response = await JSON.parse(res.body).body;
-          console.log("res msg: ", response);
-          if (response.color) {
-            drawReceived(response);
+          const response = await JSON.parse(res.body);
+          console.log("STOMP MSG: ", response);
+          if (response?.removed) {
+            if (response.removed === state.user) window.location.href = window.location.origin;
+          } else if (response.body?.color) {
+            drawReceived(response.body);
           } else {
-            eraseReceived(response);
+            eraseReceived(response.body);
           }
         });
       },
@@ -223,7 +225,7 @@ const Whiteboard: React.FC = () => {
   return (
     <div className="relative flex flex-col h-screen">
       <div className="absolute top-0 border-b-white w-full z-10">
-        <Navbar setColor={setColor} pin={pin} id={id} users={users}/>
+        <Navbar setColor={setColor} pin={pin} id={id} users={users} user={state.user}/>
       </div>
       <div className="h-full">
         <canvas

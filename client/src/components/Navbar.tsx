@@ -1,14 +1,38 @@
 import React from "react";
 import logo from "../assets/logo.png";
+import { useParams } from "react-router-dom";
 
 interface Props {
   setColor: (color: string) => void;
   pin: number | null;
   id: string | undefined;
   users: string[];
+  user: string;
 }
 
 const Navbar: React.FC<Props> = (props) => {
+  const { id } = useParams();
+  const removeUser = (user: string) => {
+    console.log(user);
+    removeUserFetch(user);
+  };
+
+  const removeUserFetch = async (user: string) => {
+    try {
+      const res = await fetch(`http://localhost:8000/room/remove/${props.user}/${id}/${user}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.ok) {
+        const users = await res.json();
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
   return (
     <nav className="w-full h-12 bg-gray-800 flex justify-around border-b-2">
       <div className="flex space-x-1 self-center">
@@ -70,10 +94,15 @@ const Navbar: React.FC<Props> = (props) => {
                 title={user}
               >
                 <span className="truncate">{user}</span>
-                <span
-                  className="fa fa-ban text-md text-red-500 bg-white p-0.5 rounded"
-                  title="Remove"
-                ></span>
+                {props.pin ? (
+                  <span
+                    className="fa fa-ban text-md text-red-500 bg-white p-0.5 rounded"
+                    title="Remove"
+                    onClick={() => removeUser(user)}
+                  ></span>
+                ) : (
+                  ""
+                )}
               </li> // title={user} to show full name when we hover on li
             ))}
           </ul>
