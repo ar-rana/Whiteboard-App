@@ -13,4 +13,5 @@ public class DrawObject {
     String color;
     List<Integer> start;
     List<Integer> end;
+    String boardId;
 }

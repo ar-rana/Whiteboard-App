@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EraseObject {
-    int xOffset;
-    int yOffset;
-    int eraser;
+    Integer xOffset;
+    Integer yOffset;
+    Integer eraser;
+    String boardId;
 }
