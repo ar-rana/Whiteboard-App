@@ -19,9 +19,6 @@ interface eraseObj {
   boardId: string;
 }
 
-// fix 2 bugs: 
-// 2) the eraser not working bug
-
 const Whiteboard: React.FC = () => {
   const { state } = useLocation();
   const { id } = useParams<string>();
