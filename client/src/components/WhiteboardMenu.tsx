@@ -1,17 +1,19 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface Props {
   eraseing: React.RefObject<boolean>;
   drawing: React.RefObject<boolean>;
   eraserSize: React.RefObject<number>;
   admin: boolean;
-  setPin: (pin: number) => void;
+  // setPin: (pin: number) => void;
+  pinRef: React.RefObject<number | null>;
   user: string;
 }
 
 const WhiteboardMenu: React.FC<Props> = (props) => {
   const { id } = useParams();
+  const navigate = useNavigate();
   
   const generatePin = (): number => {
     let pin = 0;
@@ -23,7 +25,8 @@ const WhiteboardMenu: React.FC<Props> = (props) => {
 
   const resetPin = async () => {
     const pin = generatePin();
-    props.setPin(pin);
+    // props.setPin(pin);
+    props.pinRef.current = pin;
     try {
       const res = await fetch(`http://localhost:8000/room/reset/${props.user}/${id}/${pin}`, {
         method: "GET",
@@ -34,6 +37,7 @@ const WhiteboardMenu: React.FC<Props> = (props) => {
 
       if (res.ok) {
         const response = await res.text();
+        navigate(`/whiteboard/${id}`, { state: { pin: pin, user: props.user }});
         alert(response);
       }
     } catch (e) {

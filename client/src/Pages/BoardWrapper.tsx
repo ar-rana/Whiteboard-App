@@ -11,7 +11,7 @@ const BoardWrapper: React.FC = () => {
   const verify = async () => {
     try {
       const res = await fetch(
-        `http://localhost:8000/room/verify/${state.user}/${id}`,
+        `http://localhost:8000/room/verify/${state.user}/${id}/${state?.pin}`,
         {
           method: "GET",
           headers: {
@@ -22,8 +22,9 @@ const BoardWrapper: React.FC = () => {
 
       if (res.ok) {
         setAuth(true);
-      } else {
-        setAuth(false);
+      } else if (res.status === 403){
+        alert("User Already inside the Room, Please ask admin for help!!, Or join with another Name");
+        window.location.href = window.location.origin;
       }
     } catch (e) {
       console.log(e);

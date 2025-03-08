@@ -13,11 +13,14 @@ interface drawObj {
 }
 
 interface eraseObj {
-  xOffset: number;
-  yOffset: number;
+  xvalue: number;
+  yvalue: number;
   eraser: number;
   boardId: string;
 }
+
+// fix 2 bugs: 
+// 2) the eraser not working bug
 
 const Whiteboard: React.FC = () => {
   const { state } = useLocation();
@@ -25,6 +28,7 @@ const Whiteboard: React.FC = () => {
 
   const [users, setUsers] = useState<string[]>([state.user]);
   const [pin, setPin] = useState<number | null>(state?.pin);
+  const pinRef = useRef<number | null>(state?.pin);
   const [color, setColor] = useState<string>("#ffffff");
 
   const stompWSRef = useRef<null | Client>(null);
@@ -85,8 +89,8 @@ const Whiteboard: React.FC = () => {
     const x = e.offsetX;
     const y = e.offsetY;
     const msg: eraseObj = {
-      xOffset: x,
-      yOffset: y,
+      xvalue: x,
+      yvalue: y,
       eraser: eraserSize.current,
       boardId: id!,
     }
@@ -126,7 +130,7 @@ const Whiteboard: React.FC = () => {
 
   const eraseReceived = (msg: eraseObj) => {
     console.log("reached WS eraser");
-    context.current?.clearRect(msg.xOffset, msg.yOffset, msg.eraser, msg.eraser);
+    context.current?.clearRect(msg.xvalue, msg.yvalue, msg.eraser, msg.eraser);
   }
 
   useEffect(() => {
@@ -134,10 +138,14 @@ const Whiteboard: React.FC = () => {
   }, [color]);
 
   useEffect(() => {
+    pinRef.current = pin;
+  }, [pin]);
+
+  useEffect(() => {
     const socket = new SockJS("http://localhost:8000/ws");
     const stompClient = new Client({
       webSocketFactory: () => socket,
-      reconnectDelay: 4000,
+      reconnectDelay: 5000,
       debug: (str) => {
         console.log(str);
       },
@@ -184,10 +192,12 @@ const Whiteboard: React.FC = () => {
   const sendEraseMsg = (msg: eraseObj) => {
     const stompClient = stompWSRef.current;
     console.log("eraser msg: ", msg);
+    // console.log("eraser msg json: ", JSON.stringify(msg)); {"xvalue":628,"yvalue":386,"eraser":15,"boardId":"7407429c-dc99-44aa-ad66-61ea8fd742f6"}
     if (stompClient && stompClient.connected) {
       stompClient.publish({
         destination: `/app/collab/erase/${id}`,
         body: JSON.stringify(msg),
+        headers: { "content-type": "application/json" }
       })
     } else {
       console.log("Not Connected to WS");
@@ -225,7 +235,7 @@ const Whiteboard: React.FC = () => {
   return (
     <div className="relative flex flex-col h-screen">
       <div className="absolute top-0 border-b-white w-full z-10">
-        <Navbar setColor={setColor} pin={pin} id={id} users={users} user={state.user}/>
+        <Navbar setColor={setColor} pin={pinRef.current} id={id} users={users} user={state.user}/>
       </div>
       <div className="h-full">
         <canvas
@@ -236,7 +246,7 @@ const Whiteboard: React.FC = () => {
         ></canvas>
       </div>
       <div className="absolute flex flex-col top-14 left-0 space-y-1">
-        <WhiteboardMenu eraseing={eraseing} drawing={drawing} eraserSize={eraserSize} admin={state?.pin != null} setPin={setPin} user={state.user}/>
+        <WhiteboardMenu eraseing={eraseing} drawing={drawing} eraserSize={eraserSize} admin={state?.pin != null} pinRef={pinRef} user={state.user}/>
       </div>
     </div>
   );

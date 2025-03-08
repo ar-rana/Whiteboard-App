@@ -4,7 +4,7 @@ import logo from "../assets/logo.png";
 
 const Home: React.FC = () => {
   const [name, setName] = useState<string>("");
-  const pinRef = useRef<number | null>(null);
+  // const pinRef = useRef<number | null>(null);
   const [roomId, setRoomId] = useState<string>("");
   const [join, setJoin] = useState<boolean>(false);
 
@@ -25,7 +25,7 @@ const Home: React.FC = () => {
 
   const getRoomId = async () => {
     const pin = generatePin();
-    pinRef.current = pin;
+    // pinRef.current = pin;
     try {
       const res = await fetch("http://localhost:8000/room/create", {
         method: "POST",
@@ -34,13 +34,13 @@ const Home: React.FC = () => {
         },
         body: JSON.stringify({
           user: name,
-          pin: pinRef.current,
+          pin: pin,
         }),
       });
 
       if (res.ok) {
         const resp = await res.text();
-        navigate(`/whiteboard/${resp}`, { state: { pin: pinRef.current, user: name }});
+        navigate(`/whiteboard/${resp}`, { state: { pin: pin, user: name }});
       }
     } catch (e) {
       console.log(e);

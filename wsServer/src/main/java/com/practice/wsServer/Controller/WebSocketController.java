@@ -16,14 +16,14 @@ public class WebSocketController {
     @MessageMapping("/collab/draw/{boardId}")
     @SendTo("/board/{boardId}")
     public ResponseEntity<DrawObject> whiteboardDraw(@RequestBody DrawObject drawObject) {
-        log.info("DrawObject Received: {}, on Board: {}", drawObject, drawObject.getBoardId());
+        log.info("DrawObject Received: {}", drawObject);
         return ResponseEntity.ok().body(drawObject);
     }
 
     @MessageMapping("/collab/erase/{boardId}")
     @SendTo("/board/{boardId}")
     public ResponseEntity<EraseObject> whiteboardErase(@RequestBody EraseObject eraseObject) {
-        log.info("Erase Received: {}, on Board: {}", eraseObject, eraseObject.getBoardId());
+        log.info("EraseObject Received: {}", eraseObject);
         return ResponseEntity.ok().body(eraseObject);
     }
 }

@@ -65,7 +65,8 @@ const Modal: React.FC<Props> = (props) => {
         props.setAuth(true);
         // navigate(`/whiteboard/${id}`, { state: { pin: null, user: state.user }});
       } else {
-        alert("Incorrect PIN Entered/User already Exists!!")
+        const resp = await res.text();
+        alert(resp);
       }
     } catch (e) {
       console.log(e);

@@ -82,13 +82,16 @@ public class RoomController {
         return ResponseEntity.ok().body(admin);
     }
 
-    @GetMapping("/verify/{user}/{boardId}") // security
-    public ResponseEntity<?> verify(@PathVariable(required = true) String user, @PathVariable(required = true) String boardId) {
+    @GetMapping("/verify/{user}/{boardId}/{pin}") // security
+    public ResponseEntity<?> verify(@PathVariable(required = true) String user, @PathVariable(required = true) String boardId, @PathVariable(required = false) String pin) {
         String key = String.format("room/%s", boardId);
+        String roomKey = String.format("PIN/%s", boardId);
+        String roomPIN = cache.getCache(roomKey, String.class);
+        if (roomPIN != null && roomPIN.equals(pin)) return ResponseEntity.ok().build();
 
         List<String> users = cache.getCache(key, new TypeReference<List<String>>() {});
         if (users.contains(user)) {
-            return ResponseEntity.ok().build();
+            return ResponseEntity.status(403).build();
         }
 
         return ResponseEntity.status(401).build();

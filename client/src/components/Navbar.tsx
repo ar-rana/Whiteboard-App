@@ -27,7 +27,7 @@ const Navbar: React.FC<Props> = (props) => {
       });
 
       if (res.ok) {
-        const users = await res.json();
+        const users = await res.text();
       }
     } catch (e) {
       console.log(e);
